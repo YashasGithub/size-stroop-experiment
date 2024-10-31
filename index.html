@@ -32,6 +32,14 @@
     fullscreen_mode: true
   });
 
+  /* welcome */ 
+  var  welcome = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: "Welcome to the Size Stroop experiment. Press any key to begin"
+  };
+
+  timeline.push(welcome);
+
   timeline.push({
     type: jsPsychHtmlKeyboardResponse,
     stimulus: 'This trial will be in fullscreen mode.',
@@ -52,6 +60,19 @@
   };
 
   timeline.push(participantIdEntry);
+
+  /* instructions */ 
+  var instructions = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: `
+    <p>In this experiment, two objects will appear on the screen. 
+      If the object on the left is bigger, press "z" as fast as you can. 
+      If the object on the right is bigger, press "m" as fast as you can.</p>
+    <p>Press any key to begin</p> 
+      `
+  };
+
+  timeline.push(instructions);
 
   /* create stimulus list */
   // IDEA: each element in the array will be a dictionary so that we can concurrently store information about the correctness of the response
@@ -170,7 +191,6 @@
   /* start the experiment */
   jsPsych.run(timeline);
 
-// test to test 
 </script>
 
 </html>
