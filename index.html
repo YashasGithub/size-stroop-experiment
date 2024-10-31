@@ -4,7 +4,13 @@
 <head>
   <title>My experiment</title>
   <script src="https://unpkg.com/jspsych@8.0.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.0.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-audio-button-response@2.0.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-image-keyboard-response@2.0.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-text@2.0.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-preload@2.0.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-text@2.0.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-fullscreen@1.2.1"></script>
   <link href="https://unpkg.com/jspsych@8.0.0/css/jspsych.css" rel="stylesheet" type="text/css" />
 </head>
 
@@ -21,9 +27,119 @@
   /* create timeline */
   var timeline = [];
 
+  timeline.push({
+    type: jsPsychFullscreen,
+    fullscreen_mode: true
+  });
+
+  timeline.push({
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: 'This trial will be in fullscreen mode.',
+    trial_duration: 1000
+  });
+
+  var participantIdEntry = {
+    type: jsPsychSurveyText,
+    questions: [{ prompt: "Please enter your participant ID (e.g. p1):", name: "participant_id" }],
+    on_finish: function (data) {
+      console.log(data.response)
+      jsPsych.data.addProperties(
+        {
+          participant: data.response.participant_id
+        }
+      );
+    }
+  };
+
+  timeline.push(participantIdEntry);
+
   /* create stimulus list */
   // IDEA: each element in the array will be a dictionary so that we can concurrently store information about the correctness of the response
   // MAIN TO DO: How can we expand this systematically to encompass all stimuli?
+
+  var stimuli = [];
+  var num_images = 36;
+
+  for (let i = 1; i <= num_images; i++)
+  {
+    var congruent_image_name = 'stimuli/' + i + '-Congruent.jpg';
+    var incongruent_image_name = 'stimuli/' + i + '-Inongruent.jpg';
+
+    console.log(congruent_image_name);
+
+    stimuli.push({
+      image: congruent_image_name,
+      correct_response: 'left',
+      correct_response_key: "z",
+      trial_type: 'congruent'
+    });
+
+    console.log(incongruent_image_name);
+
+    stimuli.push({
+      image: incongruent_image_name,
+      correct_response: 'right',
+      correct_response_key: "m",
+      trial_type: 'incongruent'
+    });
+  }
+
+  var stimulus_list = [];
+  for (let i = 0; i < stimuli.length; i++)
+  {
+    stimulus_list.push(stimuli[i].image);
+  }
+
+  var preload = {
+      type: jsPsychPreload,
+      images: stimulus_list
+  };
+
+  timeline.push(preload);
+
+  var selected_trials = jsPsych.randomization.sampleWithoutReplacement(stimuli, 5);
+
+  var trial = {
+    type: jsPsychImageKeyboardResponse,
+    stimulus: jsPsych.timelineVariable('image'),
+    choices: ['z', 'm'],
+    data: {
+      correct_response: jsPsych.timelineVariable('correct_response'),
+      correct_response_key: jsPsych.timelineVariable('correct_response_key'),
+      trial_type: jsPsych.timelineVariable('trial_type')
+    },
+    on_finish: function(data) {
+      data.correct = data.response === data.correct_response_key;
+    }
+  };
+
+  var feedback = {
+    type: jsPsychHtmlKeyboardResponse,
+    trial_duration: 1000,
+    stimulus: function() 
+    {
+    // The feedback stimulus is a dynamic parameter because we can't know in advance whether
+    // the stimulus should be 'correct' or 'incorrect'.
+    // Instead, this function will check the accuracy of the last response and use that information to set
+    // the stimulus value on each trial.
+      var lastTrialCorrect = jsPsych.data.get().last(1).values()[0].correct;
+      if (lastTrialCorrect)
+      {
+        return "<p>Correct!</p>"; // the parameter value has to be returned from the function
+      } 
+      else 
+      {
+        return "<p>Incorrect.</p>"; // the parameter value has to be returned from the function
+      }
+    }
+  };
+
+  timeline.push({
+    timeline: [trial],
+    timeline_variables: selected_trials
+  });
+
+  
 
   //create an example stimulus
   // we're using z and m as respons keys here because they are clear left-right response keys that are far apart on the keyboard
@@ -37,15 +153,18 @@
   // here's how we can construct a simple size stroop judgment trial
   // TO DO: Hm, there's quite a lot of whitespace below the image slide, making the prompt appear far below it. Maybe that could be improved?
   // OTHER TO DOs: what else do we need to add to the trial procedure? What other information should we store? How can we turn this into a complete experiment timeline?
-  var trial = {
+  
+  /*var trial = {
         type: jsPsychImageKeyboardResponse,
         prompt: "<p>Press z if the images are the same, m if the images are different.<\p>",
         choices: ["z", "m"],
-        data: { trial_type: stimulus_item['trial_type'],correct_response: stimulus_item['correct_response'],correct_response_key: stimulus_item['correct_response_key']},
+        data: { 
+          trial_type: stimulus_item['trial_type'],
+          correct_response: stimulus_item['correct_response'],
+          correct_response_key: stimulus_item['correct_response_key']
+        },
         stimulus: stimulus_item['image_name']
-      }
-
-  timeline.push(trial);
+      } */
 
 
   /* start the experiment */
