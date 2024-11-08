@@ -27,6 +27,10 @@
   /* create timeline */
   var timeline = [];
 
+  var condition = Math.random() < 0.5 ? "bigger" : "smaller";
+  jsPsych.data.addProperties({ condition: condition });
+
+
   timeline.push({
     type: jsPsychFullscreen,
     fullscreen_mode: true
@@ -61,22 +65,25 @@
 
   timeline.push(participantIdEntry);
 
-  /* instructions */ 
-  var instructions = {
-    type: jsPsychHtmlKeyboardResponse,
-    stimulus: `
-    <p>In this experiment, two objects will appear on the screen. 
-      If the object on the left is bigger, press "z" as fast as you can. 
-      If the object on the right is bigger, press "m" as fast as you can.</p>
-    <p>Press any key to begin</p> 
-      `
-  };
+  /* Instructions */
+var instructions = {
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: function() {
+    if (condition === "bigger") {
+      return `<p>In this experiment, two objects will appear on the screen. Identify the <strong>larger</strong> object.</p>
+              <p>If the object on the left is larger, press "z". If the object on the right is larger, press "m".</p>
+              <p>Press any key to begin.</p>`;
+    } else {
+      return `<p>In this experiment, two objects will appear on the screen. Identify the <strong>smaller</strong> object.</p>
+              <p>If the object on the left is smaller, press "z". If the object on the right is smaller, press "m".</p>
+              <p>Press any key to begin.</p>`;
+    }
+  }
+};
 
   timeline.push(instructions);
 
   /* create stimulus list */
-  // IDEA: each element in the array will be a dictionary so that we can concurrently store information about the correctness of the response
-  // MAIN TO DO: How can we expand this systematically to encompass all stimuli?
 
   var stimuli = [];
   var num_images = 36;
@@ -88,10 +95,12 @@
 
     console.log(congruent_image_name);
 
+    console.log(condition)
+
     stimuli.push({
       image: congruent_image_name,
-      correct_response: 'left',
-      correct_response_key: "z",
+      correct_response: condition === "bigger" ? 'left' : 'right',
+      correct_response_key: condition === "bigger" ? 'z' : 'm',
       trial_type: 'congruent'
     });
 
@@ -99,8 +108,8 @@
 
     stimuli.push({
       image: incongruent_image_name,
-      correct_response: 'right',
-      correct_response_key: "m",
+      correct_response: condition === "bigger" ? 'right' : 'left',
+      correct_response_key: condition === "bigger" ? 'm' : 'z',
       trial_type: 'incongruent'
     });
   }
@@ -137,26 +146,18 @@
   var feedback = {
     type: jsPsychHtmlKeyboardResponse,
     trial_duration: 1000,
-    stimulus: function() 
-    {
-    // The feedback stimulus is a dynamic parameter because we can't know in advance whether
-    // the stimulus should be 'correct' or 'incorrect'.
-    // Instead, this function will check the accuracy of the last response and use that information to set
-    // the stimulus value on each trial.
-      var lastTrialCorrect = jsPsych.data.get().last(1).values()[0].correct;
-      if (lastTrialCorrect)
-      {
-        return "<p>Correct!</p>"; // the parameter value has to be returned from the function
-      } 
-      else 
-      {
-        return "<p>Incorrect.</p>"; // the parameter value has to be returned from the function
-      }
+    stimulus: function() {
+    var lastTrialCorrect = jsPsych.data.get().last(1).values()[0].correct;
+    return lastTrialCorrect ? "<p>Correct!</p>" : "<p>Incorrect. Continuing in 5 seconds...</p>";
+    },
+    trial_duration: function() {
+    var lastTrialCorrect = jsPsych.data.get().last(1).values()[0].correct;
+    return lastTrialCorrect ? 900 : 5000;
     }
   };
 
   timeline.push({
-    timeline: [trial],
+    timeline: [trial, feedback],
     timeline_variables: selected_trials
   });
 
