@@ -29,8 +29,9 @@
   /* create timeline */
   var timeline = [];
 
-  //PLEASE KEEP FOR ALL FUTURE ITERATIONS
-  //create a unique filename by combining a random string and a millisecond counter (to avoid duplicates)
+  /* Pre-Experiment Data-Saving Module */
+  // DO NOT TOUCH!!!! //
+  // create a unique filename by combining a random string and a millisecond counter (to avoid duplicates)
   var random_id = jsPsych.randomization.randomID(10);
   const date = new Date();
   random_id = "p"+random_id.toString();
@@ -42,16 +43,18 @@
       });
   //PLEASE KEEP FOR ALL FUTURE ITERATIONS
 
+  /* Random Condition Assignment*/
+  // chooses larger or smaller condition on a 50/50 chance
   var condition = Math.random() < 0.5 ? "bigger" : "smaller";
   jsPsych.data.addProperties({ condition: condition });
 
-
+  /* Full-Screen Mode */
   timeline.push({
     type: jsPsychFullscreen,
     fullscreen_mode: true
   });
 
-  /* welcome */
+  /* Welcome Message */
   var welcome = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: "Welcome to the Size Stroop experiment. Press any key to begin"
@@ -65,6 +68,7 @@
     trial_duration: 1000
   });
 
+  /* Participant Id Entry Module */
   var participantIdEntry = {
     type: jsPsychSurveyText,
     questions: [{ prompt: "Please enter your participant ID (e.g. p1):", name: "participant_id" }],
@@ -80,7 +84,8 @@
 
   timeline.push(participantIdEntry);
 
-  /* Instructions */
+  /* Instructions Message */
+  // dynamically updates depending on condition assignment
   var instructions = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: function () {
@@ -98,8 +103,7 @@
 
   timeline.push(instructions);
 
-  /* create stimulus list */
-
+  /* Stimulus List Creation Module */
   var stimuli = [];
   var num_images = 36;
 
@@ -111,28 +115,32 @@
 
     console.log(condition)
 
+    // pushes congruent images to stimulus list //
     stimuli.push({
       image: congruent_image_name,
-      correct_response: condition === "bigger" ? 'left' : 'right',
-      correct_response_key: condition === "bigger" ? 'z' : 'm',
+      correct_response: condition === "bigger" ? 'left' : 'right', // dynamically updates correct response
+      correct_response_key: condition === "bigger" ? 'z' : 'm',    // depending on randomised condition
       trial_type: 'congruent'
     });
 
     console.log(incongruent_image_name);
 
+    // pushes incongruent images to stimulus list
     stimuli.push({
       image: incongruent_image_name,
-      correct_response: condition === "bigger" ? 'right' : 'left',
-      correct_response_key: condition === "bigger" ? 'm' : 'z',
+      correct_response: condition === "bigger" ? 'right' : 'left', // dynamically updates correct response
+      correct_response_key: condition === "bigger" ? 'm' : 'z',    // depending on randomised condition
       trial_type: 'incongruent'
     });
   }
 
+  // add all images to a separate list for preloading
   var stimulus_list = [];
   for (let i = 0; i < stimuli.length; i++) {
     stimulus_list.push(stimuli[i].image);
   }
 
+  /* Preload Module */
   var preload = {
     type: jsPsychPreload,
     images: stimulus_list
@@ -140,8 +148,11 @@
 
   timeline.push(preload);
 
-  var selected_trials = jsPsych.randomization.sampleWithoutReplacement(stimuli, 5);
+  /* Random Selection of Images */
+  var selected_trials = jsPsych.randomization.sampleWithoutReplacement(stimuli, 5); 
+  // chooses 5 random images from the list, sampling without replacement.
 
+  /* Trial Definiton */
   var trial = {
     type: jsPsychImageKeyboardResponse,
     stimulus: jsPsych.timelineVariable('image'),
@@ -156,53 +167,30 @@
     }
   };
 
+  /* Contingent Feedback Module */
   var feedback = {
     type: jsPsychHtmlKeyboardResponse,
     trial_duration: 1000,
+    // determines if a response is correct
     stimulus: function () {
       var lastTrialCorrect = jsPsych.data.get().last(1).values()[0].correct;
       return lastTrialCorrect ? "<p>Correct!</p>" : "<p>Incorrect. Continuing in 5 seconds...</p>";
     },
+    // adds a duration of 900 ms w/ correct answers, 5 seconds w/ incorrect answers.
     trial_duration: function () {
       var lastTrialCorrect = jsPsych.data.get().last(1).values()[0].correct;
       return lastTrialCorrect ? 900 : 5000;
     }
   };
 
+  // Pushing Experiment to Timeline //
   timeline.push({
     timeline: [trial, feedback],
     timeline_variables: selected_trials
   });
 
-
-
-  //create an example stimulus
-  // we're using z and m as respons keys here because they are clear left-right response keys that are far apart on the keyboard
-  stimulus_item = {
-    image_name: "stimuli/1-Congruent.jpg",
-    correct_response: "left",
-    correct_response_key: "z",
-    trial_type: "congruent"
-  }
-
-  // here's how we can construct a simple size stroop judgment trial
-  // TO DO: Hm, there's quite a lot of whitespace below the image slide, making the prompt appear far below it. Maybe that could be improved?
-  // OTHER TO DOs: what else do we need to add to the trial procedure? What other information should we store? How can we turn this into a complete experiment timeline?
-
-  /*var trial = {
-        type: jsPsychImageKeyboardResponse,
-        prompt: "<p>Press z if the images are the same, m if the images are different.<\p>",
-        choices: ["z", "m"],
-        data: { 
-          trial_type: stimulus_item['trial_type'],
-          correct_response: stimulus_item['correct_response'],
-          correct_response_key: stimulus_item['correct_response_key']
-        },
-        stimulus: stimulus_item['image_name']
-      } */
-
-  //PLEASE KEEP FOR ALL FUTURE ITERATIONS
-  //this portion of the code ensures that the data gets sent to be stored on OSF
+  /* Experiment Data-Saving Module */
+  // DO NOT TOUCH!!!! //
   const save_data = {
     type: jsPsychPipe,
     action: "save",
@@ -213,7 +201,7 @@
   timeline.push(save_data);
   //PLEASE KEEP FOR ALL FUTURE ITERATIONS
 
-  /* start the experiment */
+  /* Start the Experiment */
   jsPsych.run(timeline);
 
 </script>
