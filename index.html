@@ -20,11 +20,7 @@
 <script>
 
   /* initialize jsPsych */
-  var jsPsych = initJsPsych({
-    on_finish: function () {
-      jsPsych.data.displayData();
-    }
-  });
+  var jsPsych = initJsPsych();
 
   /* create timeline */
   var timeline = [];
@@ -98,12 +94,12 @@
     type: jsPsychHtmlKeyboardResponse,
     stimulus: function () {
       if (condition === "bigger") {
-        return `<p>In this experiment, two objects will appear on the screen. Identify the <strong>larger</strong> object.</p>
-              <p>If the object on the left is larger, press "z". If the object on the right is larger, press "m".</p>
+        return `<p>In this experiment, two images will appear on the screen. Identify the <strong>larger</strong> images.</p>
+              <p>If the image on the left is larger, press "z". If the image on the right is larger, press "m".</p>
               <p>Press any key to begin.</p>`;
       } else {
-        return `<p>In this experiment, two objects will appear on the screen. Identify the <strong>smaller</strong> object.</p>
-              <p>If the object on the left is smaller, press "z". If the object on the right is smaller, press "m".</p>
+        return `<p>In this experiment, two images will appear on the screen. Identify the <strong>smaller</strong> image.</p>
+              <p>If the image on the left is smaller, press "z". If the image on the right is smaller, press "m".</p>
               <p>Press any key to begin.</p>`;
       }
     }
@@ -156,7 +152,7 @@
 
   timeline.push(preload);
 
-  var num_of_trials = 72;
+  var num_of_trials = 2;
 
   /* Random Selection of Images */
   var selected_trials = jsPsych.randomization.sampleWithoutReplacement(stimuli, num_of_trials); 
@@ -213,13 +209,8 @@
     stimulus: function() {
       accuracy = (accuracy / num_of_trials) * 100;
 
-    // Extract reaction times
-    var rtValues = Math.round(selected_trials.select('rt').mean())
-    console.log(rtValues);
-
       return `<p>You have completed the experiment!</p>
-              <p>Your accuracy was: ${accuracy}%</p>
-              <p>Your average reaction time was: ${rtValues} ms.</p>
+              <p>Your accuracy was: ${accuracy}%.</p>
               <p>Thank you for participating.</p>
               <p>Press any key to continue.</p>`;
     }
@@ -264,11 +255,13 @@
 
   timeline.push(additionalParticipantData2);
  
-  var welcome = {
+  var debrief = {
     type: jsPsychHtmlKeyboardResponse,
-    stimulus: "The purpose of this experiment is to determine if the real world size of a familiar object is automatically processed when viewed."
+    stimulus: '<p>The purpose of this experiment is to determine if the real world size of a familiar object is automatically processed when viewed.</p><p>Thank you for participating!</p>'
   };
-  
+
+  timeline.push(debrief);
+
   /* Experiment Data-Saving Module */
   // DO NOT TOUCH!!!! //
   const save_data = {
