@@ -170,7 +170,6 @@
   /* Contingent Feedback Module */
   var feedback = {
     type: jsPsychHtmlKeyboardResponse,
-    trial_duration: 1000,
     // determines if a response is correct
     stimulus: function () {
       var lastTrialCorrect = jsPsych.data.get().last(1).values()[0].correct;
