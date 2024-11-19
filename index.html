@@ -57,7 +57,7 @@
   /* Welcome Message */
   var welcome = {
     type: jsPsychHtmlKeyboardResponse,
-    stimulus: "Welcome to the Size Stroop experiment. Press any key to begin"
+    stimulus: "Welcome to the Size Stroop experiment. Press any key to begin."
   };
 
   timeline.push(welcome);
@@ -263,7 +263,12 @@
   };
 
   timeline.push(additionalParticipantData2);
-
+ 
+  var welcome = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: "The purpose of this experiment is to determine if the real world size of a familiar object is automatically processed when viewed."
+  };
+  
   /* Experiment Data-Saving Module */
   // DO NOT TOUCH!!!! //
   const save_data = {
