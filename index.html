@@ -62,6 +62,14 @@
 
   timeline.push(welcome);
 
+  /* Adding Fixation Cross */
+  var fixation = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: '<div style="font-size:60px;">+</div>',
+    choices: "NO KEYS",
+    trial_duration: 1000, 
+  };
+
   timeline.push({
     type: jsPsychHtmlKeyboardResponse,
     stimulus: 'This trial will be in fullscreen mode.',
@@ -195,7 +203,7 @@
 
   // Pushing Experiment to Timeline //
   timeline.push({
-    timeline: [trial, feedback],
+    timeline: [fixation, trial, feedback],
     timeline_variables: selected_trials
   });
 
