@@ -148,9 +148,11 @@
 
   timeline.push(preload);
 
+  var num_of_trials = 72;
+
   /* Random Selection of Images */
-  var selected_trials = jsPsych.randomization.sampleWithoutReplacement(stimuli, 5); 
-  // chooses 5 random images from the list, sampling without replacement.
+  var selected_trials = jsPsych.randomization.sampleWithoutReplacement(stimuli, num_of_trials); 
+  // chooses X random images from the list, sampling without replacement.
 
   /* Trial Definiton */
   var trial = {
@@ -167,13 +169,22 @@
     }
   };
 
+  var accuracy = 0;
+
   /* Contingent Feedback Module */
   var feedback = {
     type: jsPsychHtmlKeyboardResponse,
     // determines if a response is correct
     stimulus: function () {
       var lastTrialCorrect = jsPsych.data.get().last(1).values()[0].correct;
-      return lastTrialCorrect ? "<p>Correct!</p>" : "<p>Incorrect. Continuing in 5 seconds...</p>";
+      if (lastTrialCorrect) {
+        accuracy++;
+      }
+      if (condition == 'smaller') {
+        return lastTrialCorrect ? "<p>Correct!</p>" : "<p>Incorrect.</p><p>Remember to select the <b>smaller</b> image.</p><p>Continuing in 5 seconds...</p>";
+      } else {
+        return lastTrialCorrect ? "<p>Correct!</p>" : "<p>Incorrect.</p><p>Remember to select the <b>bigger</b> image.</p><p>Continuing in 5 seconds...</p>";
+      }
     },
     // adds a duration of 900 ms w/ correct answers, 5 seconds w/ incorrect answers.
     trial_duration: function () {
@@ -188,6 +199,63 @@
     timeline_variables: selected_trials
   });
 
+  // Accuracy Report Module //
+  var accuracyReport = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: function() {
+      accuracy = (accuracy / num_of_trials) * 100;
+
+    // Extract reaction times
+    var rtValues = Math.round(selected_trials.select('rt').mean())
+    console.log(rtValues);
+
+      return `<p>You have completed the experiment!</p>
+              <p>Your accuracy was: ${accuracy}%</p>
+              <p>Your average reaction time was: ${rtValues} ms.</p>
+              <p>Thank you for participating.</p>
+              <p>Press any key to continue.</p>`;
+    }
+  }
+
+  timeline.push(accuracyReport);
+
+  /* Additional Participant Data Module */
+  var additionalParticipantData = {
+    type: jsPsychSurveyText,
+    questions: [{ prompt: `<p>Before we continue, we want to ask you:</p>
+                           <p>What do you think the purpose of this experiment was?</p>`, name: "participant_thoughts" }],
+    on_finish: function (data) {
+      console.log(data.response)
+      jsPsych.data.addProperties(
+        {
+          participant_thoughts: data.response.participant_thoughts
+        }
+      );
+
+      return `<p>Press enter to continue when you are finished.</p>`;
+    }
+  };
+
+  timeline.push(additionalParticipantData);
+
+  var additionalParticipantData2 = {
+    type: jsPsychSurveyText,
+    questions: [{ prompt: `<p>Did you have any technical difficulties?:</p>
+                           <p>If you did, type "Yes...", and write down the nature of your issue.</p>`, name: "participant_difficulties" }],
+    on_finish: function (data) {
+      console.log(data.response)
+      jsPsych.data.addProperties(
+        {
+          participant_difficulties: data.response.participant_difficulties
+        }
+      );
+
+      return `<p>Press enter to continue when you are finished.</p>`;
+    }
+  };
+
+  timeline.push(additionalParticipantData2);
+
   /* Experiment Data-Saving Module */
   // DO NOT TOUCH!!!! //
   const save_data = {
@@ -199,6 +267,8 @@
   };
   timeline.push(save_data);
   //PLEASE KEEP FOR ALL FUTURE ITERATIONS
+
+  
 
   /* Start the Experiment */
   jsPsych.run(timeline);
