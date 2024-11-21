@@ -152,10 +152,14 @@
 
   timeline.push(preload);
 
-  var num_of_trials = 2;
+  var num_of_trials = 144;
 
-  /* Random Selection of Images */
-  var selected_trials = jsPsych.randomization.sampleWithoutReplacement(stimuli, num_of_trials); 
+  let extendedStimuli = [...stimuli];
+  while (extendedStimuli.length < num_of_trials) {
+  extendedStimuli = extendedStimuli.concat(stimuli);
+  }
+
+  var selected_trials = jsPsych.randomization.sampleWithoutReplacement(extendedStimuli, num_of_trials); 
   // chooses X random images from the list, sampling without replacement.
 
   /* Trial Definiton */
