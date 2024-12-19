@@ -6,4 +6,4 @@ Running the experiment:
 
 To run the experiment, click on the following link:
 
-https://yashasgithub.github.io/size_stroop_experiment/
+https://yashasgithub.github.io/size-stroop-experiment/
